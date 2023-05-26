@@ -11,48 +11,31 @@ defmodule StellarBase.XDR.InvokeHostFunctionOp do
   @behaviour XDR.Declaration
 
   alias StellarBase.XDR.{
-    HostFunction,
-    LedgerFootprint,
-    ContractAuthList
+    HostFunctionList100
   }
 
-  @struct_spec XDR.Struct.new(
-                 function: HostFunction,
-                 footprint: LedgerFootprint,
-                 auth: ContractAuthList
-               )
+  @struct_spec XDR.Struct.new(functions: HostFunctionList100)
 
-  @type function_type :: HostFunction.t()
-  @type footprint_type :: LedgerFootprint.t()
-  @type auth_type :: ContractAuthList.t()
+  @type functions_type :: HostFunctionList100.t()
 
-  @type t :: %__MODULE__{
-          function: function_type(),
-          footprint: footprint_type(),
-          auth: auth_type()
-        }
+  @type t :: %__MODULE__{functions: functions_type()}
 
-  defstruct [:function, :footprint, :auth]
+  defstruct [:functions]
 
-  @spec new(function :: function_type(), footprint :: footprint_type(), auth :: auth_type()) ::
-          t()
-  def new(
-        %HostFunction{} = function,
-        %LedgerFootprint{} = footprint,
-        %ContractAuthList{} = auth
-      ),
-      do: %__MODULE__{function: function, footprint: footprint, auth: auth}
+  @spec new(functions :: functions_type()) :: t()
+  def new(%HostFunctionList100{} = functions),
+    do: %__MODULE__{functions: functions}
 
   @impl true
-  def encode_xdr(%__MODULE__{function: function, footprint: footprint, auth: auth}) do
-    [function: function, footprint: footprint, auth: auth]
+  def encode_xdr(%__MODULE__{functions: functions}) do
+    [functions: functions]
     |> XDR.Struct.new()
     |> XDR.Struct.encode_xdr()
   end
 
   @impl true
-  def encode_xdr!(%__MODULE__{function: function, footprint: footprint, auth: auth}) do
-    [function: function, footprint: footprint, auth: auth]
+  def encode_xdr!(%__MODULE__{functions: functions}) do
+    [functions: functions]
     |> XDR.Struct.new()
     |> XDR.Struct.encode_xdr!()
   end
@@ -62,9 +45,8 @@ defmodule StellarBase.XDR.InvokeHostFunctionOp do
 
   def decode_xdr(bytes, struct) do
     case XDR.Struct.decode_xdr(bytes, struct) do
-      {:ok,
-       {%XDR.Struct{components: [function: function, footprint: footprint, auth: auth]}, rest}} ->
-        {:ok, {new(function, footprint, auth), rest}}
+      {:ok, {%XDR.Struct{components: [functions: functions]}, rest}} ->
+        {:ok, {new(functions), rest}}
 
       error ->
         error
@@ -75,9 +57,9 @@ defmodule StellarBase.XDR.InvokeHostFunctionOp do
   def decode_xdr!(bytes, struct \\ @struct_spec)
 
   def decode_xdr!(bytes, struct) do
-    {%XDR.Struct{components: [function: function, footprint: footprint, auth: auth]}, rest} =
+    {%XDR.Struct{components: [functions: functions]}, rest} =
       XDR.Struct.decode_xdr!(bytes, struct)
 
-    {new(function, footprint, auth), rest}
+    {new(functions), rest}
   end
 end

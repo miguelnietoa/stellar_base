@@ -35,7 +35,8 @@ defmodule StellarBase.XDR.TransactionResultResult do
     txNOT_SUPPORTED: Void,
     txBAD_SPONSORSHIP: Void,
     txBAD_MIN_SEQ_AGE_OR_GAP: Void,
-    txMALFORMED: Void
+    txMALFORMED: Void,
+    txSOROBAN_RESOURCE_LIMIT_EXCEEDED: Void
   ]
 
   @type value ::

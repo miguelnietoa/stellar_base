@@ -13,7 +13,7 @@ defmodule StellarBase.XDR.LedgerUpgrade do
   alias StellarBase.XDR.{
     LedgerUpgradeType,
     Uint32,
-    LedgerUpgradeConfigSetting
+    ConfigUpgradeSetKey
   }
 
   @arms [
@@ -22,12 +22,12 @@ defmodule StellarBase.XDR.LedgerUpgrade do
     LEDGER_UPGRADE_MAX_TX_SET_SIZE: Uint32,
     LEDGER_UPGRADE_BASE_RESERVE: Uint32,
     LEDGER_UPGRADE_FLAGS: Uint32,
-    LEDGER_UPGRADE_CONFIG: LedgerUpgradeConfigSetting
+    LEDGER_UPGRADE_CONFIG: ConfigUpgradeSetKey
   ]
 
   @type value ::
           Uint32.t()
-          | LedgerUpgradeConfigSetting.t()
+          | ConfigUpgradeSetKey.t()
 
   @type t :: %__MODULE__{value: value(), type: LedgerUpgradeType.t()}
 

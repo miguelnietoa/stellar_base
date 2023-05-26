@@ -21,8 +21,10 @@ defmodule StellarBase.XDR.SCVal do
     Int64,
     TimePoint,
     Duration,
+    UInt128Parts,
     Int128Parts,
-    Uint256,
+    UInt256Parts,
+    Int256Parts,
     SCBytes,
     SCString,
     SCSymbol,
@@ -43,10 +45,10 @@ defmodule StellarBase.XDR.SCVal do
     SCV_I64: Int64,
     SCV_TIMEPOINT: TimePoint,
     SCV_DURATION: Duration,
-    SCV_U128: Int128Parts,
+    SCV_U128: UInt128Parts,
     SCV_I128: Int128Parts,
-    SCV_U256: Uint256,
-    SCV_I256: Uint256,
+    SCV_U256: UInt256Parts,
+    SCV_I256: Int256Parts,
     SCV_BYTES: SCBytes,
     SCV_STRING: SCString,
     SCV_SYMBOL: SCSymbol,
@@ -68,8 +70,8 @@ defmodule StellarBase.XDR.SCVal do
           | Int64.t()
           | TimePoint.t()
           | Duration.t()
-          | Int128Parts.t()
-          | Uint256.t()
+          | UInt128Parts.t()
+          | UInt256Parts.t()
           | SCBytes.t()
           | SCString.t()
           | SCSymbol.t()

@@ -13,7 +13,8 @@ defmodule StellarBase.XDR.InvokeHostFunctionResultCode do
   @declarations [
     INVOKE_HOST_FUNCTION_SUCCESS: 0,
     INVOKE_HOST_FUNCTION_MALFORMED: -1,
-    INVOKE_HOST_FUNCTION_TRAPPED: -2
+    INVOKE_HOST_FUNCTION_TRAPPED: -2,
+    INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED: -3
   ]
 
   @enum_spec %XDR.Enum{declarations: @declarations, identifier: nil}

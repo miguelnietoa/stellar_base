@@ -12,18 +12,19 @@ defmodule StellarBase.XDR.InvokeHostFunctionResult do
 
   alias StellarBase.XDR.{
     InvokeHostFunctionResultCode,
-    SCVal,
+    SCValList100,
     Void
   }
 
   @arms [
-    INVOKE_HOST_FUNCTION_SUCCESS: SCVal,
+    INVOKE_HOST_FUNCTION_SUCCESS: SCValList100,
     INVOKE_HOST_FUNCTION_MALFORMED: Void,
-    INVOKE_HOST_FUNCTION_TRAPPED: Void
+    INVOKE_HOST_FUNCTION_TRAPPED: Void,
+    INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED: Void
   ]
 
   @type value ::
-          SCVal.t()
+          SCValList100.t()
           | Void.t()
 
   @type t :: %__MODULE__{value: value(), type: InvokeHostFunctionResultCode.t()}

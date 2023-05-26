@@ -11,66 +11,63 @@ defmodule StellarBase.XDR.HostFunction do
   @behaviour XDR.Declaration
 
   alias StellarBase.XDR.{
-    HostFunctionType,
-    SCVec,
-    CreateContractArgs,
-    InstallContractCodeArgs
+    HostFunctionArgs,
+    ContractAuthList
   }
 
-  @arms [
-    HOST_FUNCTION_TYPE_INVOKE_CONTRACT: SCVec,
-    HOST_FUNCTION_TYPE_CREATE_CONTRACT: CreateContractArgs,
-    HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE: InstallContractCodeArgs
-  ]
+  @struct_spec XDR.Struct.new(
+                 args: HostFunctionArgs,
+                 auth: ContractAuthList
+               )
 
-  @type value ::
-          SCVec.t()
-          | CreateContractArgs.t()
-          | InstallContractCodeArgs.t()
+  @type args_type :: HostFunctionArgs.t()
+  @type auth_type :: ContractAuthList.t()
 
-  @type t :: %__MODULE__{value: value(), type: HostFunctionType.t()}
+  @type t :: %__MODULE__{args: args_type(), auth: auth_type()}
 
-  defstruct [:value, :type]
+  defstruct [:args, :auth]
 
-  @spec new(value :: value(), type :: HostFunctionType.t()) :: t()
-  def new(value, %HostFunctionType{} = type), do: %__MODULE__{value: value, type: type}
+  @spec new(args :: args_type(), auth :: auth_type()) :: t()
+  def new(
+        %HostFunctionArgs{} = args,
+        %ContractAuthList{} = auth
+      ),
+      do: %__MODULE__{args: args, auth: auth}
 
   @impl true
-  def encode_xdr(%__MODULE__{value: value, type: type}) do
-    type
-    |> XDR.Union.new(@arms, value)
-    |> XDR.Union.encode_xdr()
+  def encode_xdr(%__MODULE__{args: args, auth: auth}) do
+    [args: args, auth: auth]
+    |> XDR.Struct.new()
+    |> XDR.Struct.encode_xdr()
   end
 
   @impl true
-  def encode_xdr!(%__MODULE__{value: value, type: type}) do
-    type
-    |> XDR.Union.new(@arms, value)
-    |> XDR.Union.encode_xdr!()
+  def encode_xdr!(%__MODULE__{args: args, auth: auth}) do
+    [args: args, auth: auth]
+    |> XDR.Struct.new()
+    |> XDR.Struct.encode_xdr!()
   end
 
   @impl true
-  def decode_xdr(bytes, spec \\ union_spec())
+  def decode_xdr(bytes, struct \\ @struct_spec)
 
-  def decode_xdr(bytes, spec) do
-    case XDR.Union.decode_xdr(bytes, spec) do
-      {:ok, {{type, value}, rest}} -> {:ok, {new(value, type), rest}}
-      error -> error
+  def decode_xdr(bytes, struct) do
+    case XDR.Struct.decode_xdr(bytes, struct) do
+      {:ok, {%XDR.Struct{components: [args: args, auth: auth]}, rest}} ->
+        {:ok, {new(args, auth), rest}}
+
+      error ->
+        error
     end
   end
 
   @impl true
-  def decode_xdr!(bytes, spec \\ union_spec())
+  def decode_xdr!(bytes, struct \\ @struct_spec)
 
-  def decode_xdr!(bytes, spec) do
-    {{type, value}, rest} = XDR.Union.decode_xdr!(bytes, spec)
-    {new(value, type), rest}
-  end
+  def decode_xdr!(bytes, struct) do
+    {%XDR.Struct{components: [args: args, auth: auth]}, rest} =
+      XDR.Struct.decode_xdr!(bytes, struct)
 
-  @spec union_spec() :: XDR.Union.t()
-  defp union_spec do
-    nil
-    |> HostFunctionType.new()
-    |> XDR.Union.new(@arms)
+    {new(args, auth), rest}
   end
 end

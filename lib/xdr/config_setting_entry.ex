@@ -11,78 +11,81 @@ defmodule StellarBase.XDR.ConfigSettingEntry do
   @behaviour XDR.Declaration
 
   alias StellarBase.XDR.{
-    ConfigSettingEntryExt,
     ConfigSettingID,
-    ConfigSetting
+    Uint32,
+    ConfigSettingContractComputeV0,
+    ConfigSettingContractLedgerCostV0,
+    ConfigSettingContractHistoricalDataV0,
+    ConfigSettingContractMetaDataV0,
+    ConfigSettingContractBandwidthV0,
+    ContractCostParams
   }
 
-  @struct_spec XDR.Struct.new(
-                 ext: ConfigSettingEntryExt,
-                 config_setting_id: ConfigSettingID,
-                 setting: ConfigSetting
-               )
+  @arms [
+    CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES: Uint32,
+    CONFIG_SETTING_CONTRACT_COMPUTE_V0: ConfigSettingContractComputeV0,
+    CONFIG_SETTING_CONTRACT_LEDGER_COST_V0: ConfigSettingContractLedgerCostV0,
+    CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0: ConfigSettingContractHistoricalDataV0,
+    CONFIG_SETTING_CONTRACT_META_DATA_V0: ConfigSettingContractMetaDataV0,
+    CONFIG_SETTING_CONTRACT_BANDWIDTH_V0: ConfigSettingContractBandwidthV0,
+    CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS: ContractCostParams,
+    CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES: ContractCostParams,
+    CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES: Uint32,
+    CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES: Uint32
+  ]
 
-  @type ext_type :: ConfigSettingEntryExt.t()
-  @type config_setting_id_type :: ConfigSettingID.t()
-  @type setting_type :: ConfigSetting.t()
+  @type value ::
+          Uint32.t()
+          | ConfigSettingContractComputeV0.t()
+          | ConfigSettingContractLedgerCostV0.t()
+          | ConfigSettingContractHistoricalDataV0.t()
+          | ConfigSettingContractMetaDataV0.t()
+          | ConfigSettingContractBandwidthV0.t()
+          | ContractCostParams.t()
 
-  @type t :: %__MODULE__{
-          ext: ext_type(),
-          config_setting_id: config_setting_id_type(),
-          setting: setting_type()
-        }
+  @type t :: %__MODULE__{value: value(), type: ConfigSettingID.t()}
 
-  defstruct [:ext, :config_setting_id, :setting]
+  defstruct [:value, :type]
 
-  @spec new(
-          ext :: ext_type(),
-          config_setting_id :: config_setting_id_type(),
-          setting :: setting_type()
-        ) :: t()
-  def new(
-        %ConfigSettingEntryExt{} = ext,
-        %ConfigSettingID{} = config_setting_id,
-        %ConfigSetting{} = setting
-      ),
-      do: %__MODULE__{ext: ext, config_setting_id: config_setting_id, setting: setting}
+  @spec new(value :: value(), type :: ConfigSettingID.t()) :: t()
+  def new(value, %ConfigSettingID{} = type), do: %__MODULE__{value: value, type: type}
 
   @impl true
-  def encode_xdr(%__MODULE__{ext: ext, config_setting_id: config_setting_id, setting: setting}) do
-    [ext: ext, config_setting_id: config_setting_id, setting: setting]
-    |> XDR.Struct.new()
-    |> XDR.Struct.encode_xdr()
+  def encode_xdr(%__MODULE__{value: value, type: type}) do
+    type
+    |> XDR.Union.new(@arms, value)
+    |> XDR.Union.encode_xdr()
   end
 
   @impl true
-  def encode_xdr!(%__MODULE__{ext: ext, config_setting_id: config_setting_id, setting: setting}) do
-    [ext: ext, config_setting_id: config_setting_id, setting: setting]
-    |> XDR.Struct.new()
-    |> XDR.Struct.encode_xdr!()
+  def encode_xdr!(%__MODULE__{value: value, type: type}) do
+    type
+    |> XDR.Union.new(@arms, value)
+    |> XDR.Union.encode_xdr!()
   end
 
   @impl true
-  def decode_xdr(bytes, struct \\ @struct_spec)
+  def decode_xdr(bytes, spec \\ union_spec())
 
-  def decode_xdr(bytes, struct) do
-    case XDR.Struct.decode_xdr(bytes, struct) do
-      {:ok,
-       {%XDR.Struct{
-          components: [ext: ext, config_setting_id: config_setting_id, setting: setting]
-        }, rest}} ->
-        {:ok, {new(ext, config_setting_id, setting), rest}}
-
-      error ->
-        error
+  def decode_xdr(bytes, spec) do
+    case XDR.Union.decode_xdr(bytes, spec) do
+      {:ok, {{type, value}, rest}} -> {:ok, {new(value, type), rest}}
+      error -> error
     end
   end
 
   @impl true
-  def decode_xdr!(bytes, struct \\ @struct_spec)
+  def decode_xdr!(bytes, spec \\ union_spec())
 
-  def decode_xdr!(bytes, struct) do
-    {%XDR.Struct{components: [ext: ext, config_setting_id: config_setting_id, setting: setting]},
-     rest} = XDR.Struct.decode_xdr!(bytes, struct)
+  def decode_xdr!(bytes, spec) do
+    {{type, value}, rest} = XDR.Union.decode_xdr!(bytes, spec)
+    {new(value, type), rest}
+  end
 
-    {new(ext, config_setting_id, setting), rest}
+  @spec union_spec() :: XDR.Union.t()
+  defp union_spec do
+    nil
+    |> ConfigSettingID.new()
+    |> XDR.Union.new(@arms)
   end
 end
